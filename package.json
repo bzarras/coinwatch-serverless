@@ -1,0 +1,29 @@
+{
+  "name": "coinwatch-serverless",
+  "version": "0.1.0",
+  "description": "Serverless webpack example using Typescript",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.270.1",
+    "pug": "^2.0.3",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "source-map-support": "^0.5.6"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.7",
+    "@types/node": "^10.3.5",
+    "@types/pug": "^2.0.4",
+    "@types/request": "^2.47.1",
+    "@types/request-promise": "^4.1.41",
+    "serverless-domain-manager": "^2.4.0",
+    "serverless-offline": "^3.25.4",
+    "serverless-plugin-typescript": "^1.1.5",
+    "typescript": "^2.9.2"
+  },
+  "author": "Ben Zarras",
+  "license": "MIT"
+}

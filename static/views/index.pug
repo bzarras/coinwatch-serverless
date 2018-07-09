@@ -1,0 +1,25 @@
+extends layout.pug
+
+block jumbotron-contents
+    include components/headline.pug
+    #email-form.card
+        .card-body
+            if formError
+                .alert.alert-danger #{formError.message}
+            form(action="/subscribe" method="post")
+                .form-group
+                    input.form-control.form-control-lg.helvetica.font-weight-light(type="text" name="email" placeholder="youremail@xyz.com")
+                .form-check.helvetica.font-weight-light
+                    label.form-check-label
+                    input.form-check-input(type="checkbox" name="BTC" checked)
+                    |Bitcoin
+                .form-check.helvetica.font-weight-light
+                    label.form-check-label
+                    input.form-check-input(type="checkbox" name="ETH" checked)
+                    |Ethereum
+                .form-check.helvetica.font-weight-light
+                    label.form-check-label
+                    input.form-check-input(type="checkbox" name="LTC" checked)
+                    |Litecoin
+                button.btn.btn-primary.btn-lg.helvetica.font-weight-light(type="submit") Get Alerts
+                small.form-text.text-muted By clicking "Get Alerts", you are agreeing to receive emails about the selected currencies. You can unsubscribe from these emails at any time.

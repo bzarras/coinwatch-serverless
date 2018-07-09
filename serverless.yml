@@ -1,0 +1,51 @@
+service:
+  name: coinwatch-serverless
+
+# Add the serverless-webpack plugin
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-domain-manager
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 512
+  stage: dev
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ses:SendEmail"
+      Resource:
+        - "*"
+
+package:
+  include:
+    - static
+
+functions:
+  home:
+    handler: handler.home
+    events:
+      - http:
+          method: get
+          path: /
+  dailyAlert:
+    handler: handler.dailyAlert
+    events:
+      - schedule: cron(0 17 * * ? *)
+
+resources:
+  Resources:
+    static:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: coinwatch-static
+
+custom:
+  customDomain:
+    domainName: coinwatch.fyi
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+

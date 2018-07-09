@@ -1,0 +1,7 @@
+html
+    head
+    body
+        p Today's prices, and changes since yesterday:
+        - for (var change of changes)
+            p(style=`color: ${change.color}`) #{change.coinSymbol}: #{change.prettyPrice}, change: #{change.percentChange} %
+        include unsubscribe.pug

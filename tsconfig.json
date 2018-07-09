@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "preserveConstEnums": true,
+    "strictNullChecks": true,
+    "noEmitOnError": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "target": "es2017",
+    "outDir": ".build",
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "rootDir": "./"
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
