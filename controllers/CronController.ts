@@ -1,6 +1,7 @@
 import { CoinDataSource, CoinSymbol, Coin } from "../services/CoinDataSource";
 import { CoinMarketCapDataSource } from "../services/CoinMarketCapDataSource";
 import { MailService, MailRecipient } from "../services/MailService";
+import { UsersService } from "../services/UsersService";
 
 export class CronController {
     private readonly _validCoins: Set<string> = new Set([CoinSymbol.BTC, CoinSymbol.ETH, CoinSymbol.LTC]);
@@ -10,8 +11,9 @@ export class CronController {
         const filteredCoins = coins.filter(coin => this._validCoins.has(coin.symbol));
         
         const mailService = new MailService();
-        for(const recipient of recipients) {
-            await mailService.sendDailyAlertEmail({ recipient, coins: filteredCoins });
+        const mailPromises = recipients.map(recipient => mailService.sendDailyAlertEmail({ toRecipient: recipient, aboutCoins: filteredCoins }));
+        for (const sentMail of mailPromises) {
+            await sentMail;
         }
     }
 
@@ -21,8 +23,11 @@ export class CronController {
 
     private async fetchCoinsAndRecipients(): Promise<[Coin[], MailRecipient[]]> {
         const coinDataSource: CoinDataSource = new CoinMarketCapDataSource(10);
+        const usersService: UsersService = new UsersService();
+
         const coinsPromise = coinDataSource.fetchCoinData();
-        const recipientsPromise: Promise<MailRecipient[]> = Promise.resolve([{ email: 'benzarras@gmail.com', phrase: 'SHpIpcWazRvu' }]);
+        const recipientsPromise = usersService.fetchAllUsers();
+
         return [await coinsPromise, await recipientsPromise];
     }
 }

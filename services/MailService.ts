@@ -8,7 +8,7 @@ export class MailService {
     private readonly ses = new SES();
     private readonly renderDailyEmail = pug.compileFile(path.resolve(process.cwd(), 'static/emailTemplates/dailyUpdate.pug'));
 
-    async sendDailyAlertEmail({ recipient, coins }: { recipient: MailRecipient; coins: Coin[]; }): Promise<void> {
+    async sendDailyAlertEmail({ toRecipient: recipient, aboutCoins: coins }: { toRecipient: MailRecipient; aboutCoins: Coin[]; }): Promise<void> {
         const priceChanges = coins.map(coin => ({
             color: Number(coin.percentChange24hr) >= 0 ? 'green' : 'red',
             coinSymbol: coin.symbol,
