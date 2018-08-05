@@ -41,12 +41,26 @@ functions:
       - http:
           method: get
           path: /
+  unsubscribe:
+    handler: handler.unsubscribe
+    events:
+      - http:
+          method: get
+          path: /unsubscribe
+    environment:
+      USER_TABLE_NAME: coinbase_notifier_recipient
   dailyAlert:
     handler: handler.dailyAlert
     events:
       - schedule: cron(0 17 * * ? *)
     environment:
       USER_TABLE_NAME: coinbase_notifier_recipient
+  # fiveMinuteAlert:
+  #   handler: handler.fiveMinuteAlert
+  #   events:
+  #     - schedule: cron(*/5 * * * ? *)
+  #   environment:
+  #     USER_TABLE_NAME: coinbase_notifier_recipient
 
 resources:
   Resources:

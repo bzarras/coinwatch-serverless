@@ -11,7 +11,8 @@
     "pug": "^2.0.3",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
-    "source-map-support": "^0.5.6"
+    "source-map-support": "^0.5.6",
+    "validator": "^10.5.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.7",
@@ -19,6 +20,7 @@
     "@types/pug": "^2.0.4",
     "@types/request": "^2.47.1",
     "@types/request-promise": "^4.1.41",
+    "@types/validator": "^9.4.1",
     "serverless-domain-manager": "^2.4.0",
     "serverless-offline": "^3.25.4",
     "serverless-plugin-typescript": "^1.1.5",
