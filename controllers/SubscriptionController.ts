@@ -32,6 +32,7 @@ export class SubscriptionController {
         if (user.phrase !== phrase) throw new BadRequestError('Mismatched phrases');
 
         await usersService.deleteUser(email);
+        console.log(`${email} has successfully unsubscribed`);
     }
 
     renderUnsubscribedPage(message: string): string {
