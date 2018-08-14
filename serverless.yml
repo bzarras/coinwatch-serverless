@@ -10,7 +10,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs8.10
-  memorySize: 512
+  memorySize: 256
   stage: dev
   iamRoleStatements:
     - Effect: "Allow"
