@@ -49,6 +49,14 @@ functions:
           path: /unsubscribe
     environment:
       USER_TABLE_NAME: coinbase_notifier_recipient
+  subscribe:
+    handler: handler.subscribe
+    events:
+      - http:
+          method: post
+          path: /subscribe
+    environment:
+      USER_TABLE_NAME: coinbase_notifier_recipient
   dailyAlert:
     handler: handler.dailyAlert
     events:

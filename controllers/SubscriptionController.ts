@@ -1,24 +1,37 @@
 import { SubscribeRequest } from "../lib/SubscribeRequest";
-import { UsersService } from "../services/UsersService";
+import { UsersService, CoinwatchUser } from "../services/UsersService";
 import { NotFoundError } from "../lib/errors/NotFoundError";
 import { BadRequestError } from "../lib/errors/BadRequestError";
 import * as validator from 'validator';
+import * as randomstring from 'randomstring';
 import * as pug from 'pug';
 import * as path from 'path';
+import { MailService } from "../services/MailService";
 
 export class SubscriptionController {
     private readonly renderUnsubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/unsubscribed.pug'));
+    private readonly renderSubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/subscription.pug'));
+    private readonly renderVerificationEmail = pug.compileFile(path.resolve(process.cwd(), 'static/views/emailTemplates/verification.pug'));
 
-    async subscribeUser(subscription: SubscribeRequest) {
-        // This code is copied over from the other codebase.
-        // This will largely need to change becasue, a) TypeScript wants more
-        // rigid types, and b) the way I will be storing users and currencies
-        // will be fundamentally different. SQL database will be queried differently.
-        let currencies = {};
-        // if (subscription.BTC) currencies.BTC = true;
-        // if (subscription.ETH) currencies.ETH = true;
-        // if (subscription.LTC) currencies.LTC = true;
-        if (Object.keys(currencies).length === 0) currencies = { BTC: true, ETH: true, LTC: true };
+    async subscribeUser(subscription: SubscribeRequest): Promise<CoinwatchUser> {
+        if (!validator.isEmail(subscription.email)) throw new BadRequestError('Email address is invalid');
+        const { BTC, LTC, ETH } = subscription;
+        const usersService = new UsersService();
+        const mailService = new MailService();
+        const user: CoinwatchUser = {
+            email: subscription.email,
+            currencies: {
+                BTC: !!BTC,
+                LTC: !!LTC,
+                ETH: !!ETH
+            },
+            phrase: randomstring.generate(12),
+            verified: false
+        };
+        await usersService.putUser(user);
+        const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?phrase=${user.phrase}`});
+        await mailService.sendEmail({ email: user.email }, 'Please verify your email', emailHtml);
+        return user;
     }
 
     async unsubscribeUser(email: string, phrase: string): Promise<void> {
@@ -37,5 +50,9 @@ export class SubscriptionController {
 
     renderUnsubscribedPage(message: string): string {
         return this.renderUnsubscribed({ message });
+    }
+
+    renderSubscribePage(message: string): string {
+        return this.renderSubscribed({ message });
     }
 }

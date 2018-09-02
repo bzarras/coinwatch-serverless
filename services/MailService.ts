@@ -19,7 +19,7 @@ export class MailService {
         await this.sendEmail(recipient, 'Coinwatch daily update', emailHtml);
     }
 
-    private async sendEmail(recipient: MailRecipient, subject: string, body: string): Promise<void> {
+    async sendEmail(recipient: MailRecipient, subject: string, body: string): Promise<void> {
         const mailOptions: SendEmailRequest = {
             Source: '"Coinwatch" <donotreply@coinwatch.fyi>',
             Destination: {

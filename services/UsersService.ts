@@ -1,5 +1,5 @@
 import { DynamoDB, AWSError } from 'aws-sdk';
-import { ScanOutput, ScanInput, GetItemOutput, GetItemInput, DeleteItemInput, DeleteItemOutput, AttributeValue } from 'aws-sdk/clients/dynamodb';
+import { ScanOutput, ScanInput, GetItemOutput, GetItemInput, DeleteItemInput, DeleteItemOutput, AttributeValue, PutItemInput, PutItemOutput, PutItemInputAttributeMap } from 'aws-sdk/clients/dynamodb';
 
 export class UsersService {
     private readonly userTableName = process.env.USER_TABLE_NAME;
@@ -29,8 +29,18 @@ export class UsersService {
         return getOutput.Item ? {
             email: getOutput.Item.email as string,
             phrase: getOutput.Item.phrase as string,
-            currencies: getOutput.Item.currencies as any
+            currencies: getOutput.Item.currencies as any,
+            verified: getOutput.Item.verified as boolean
         } : undefined;
+    }
+
+    async putUser(user: CoinwatchUser): Promise<void> {
+        if (!this.userTableName) throw new Error('process.env.USER_TABLE_NAME is not defined');
+        const putOptions: PutItemInput = {
+            TableName: this.userTableName,
+            Item: user as PutItemInputAttributeMap
+        };
+        await this.putIntoDynamoTable(putOptions);
     }
 
     async deleteUser(email: string): Promise<void> {
@@ -60,6 +70,15 @@ export class UsersService {
         });
     }
 
+    private async putIntoDynamoTable(params: PutItemInput): Promise<PutItemOutput> {
+        return new Promise<PutItemOutput>((resolve, reject) => {
+            this.dynamoClient.put(params, (err: AWSError, data: PutItemOutput) => {
+                if (err) reject(err);
+                else if (data) resolve(data);
+            });
+        });
+    }
+
     private async deleteFromDynamoTable(params: DeleteItemInput): Promise<DeleteItemOutput> {
         return new Promise<DeleteItemOutput>((resolve, reject) => {
             this.dynamoClient.delete(params, (err: AWSError, data: DeleteItemOutput) => {
@@ -70,8 +89,10 @@ export class UsersService {
     }
 }
 
-interface CoinwatchUser {
+export interface CoinwatchUser {
+    [key: string]: any
     email: string;
     phrase: string;
     currencies: any;
+    verified: boolean;
 }

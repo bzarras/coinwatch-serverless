@@ -1,7 +1,8 @@
-export class BadRequestError extends Error {
-    readonly code: number;
+import { HTTPError } from "./HTTPError";
+
+export class BadRequestError extends Error implements HTTPError {
+    readonly code = 400;
     constructor(message: string) {
         super(message);
-        this.code = 400;
     }
 }

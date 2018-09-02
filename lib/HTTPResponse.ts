@@ -45,4 +45,15 @@ export class HTTPResponse {
         };
         return response;
     }
+
+    static errorHtml(code: number, html: string): ProxyResult {
+        const response: ProxyResult = {
+            statusCode: code,
+            headers: {
+                'content-type': 'text/html'
+            },
+            body: html
+        };
+        return response;
+    }
 }
