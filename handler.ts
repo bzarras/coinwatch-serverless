@@ -1,4 +1,5 @@
 import { APIGatewayEvent, Context, ProxyResult, Handler, ScheduledEvent } from 'aws-lambda';
+import * as querystring from 'querystring';
 import { RootController } from './controllers/RootController';
 import { HTTPResponse } from './lib/HTTPResponse';
 import { SubscribeRequest } from './lib/SubscribeRequest';
@@ -17,7 +18,13 @@ export const subscribe: Handler = async (event: APIGatewayEvent, context: Contex
     const subscriptionController = new SubscriptionController();
     return handleRequest(async () => {
         if (!event.body) throw new BadRequestError('Missing request body');
-        const subscribeRequest: SubscribeRequest = JSON.parse(event.body);
+        const body = querystring.parse(event.body); // Body comes over the wire as URL-Encoded format, not JSON, since it's from an HTML form
+        const subscribeRequest: SubscribeRequest = { // Should really validate all the body params first
+            email: body.email as string,
+            BTC: body.BTC as string,
+            ETH: body.ETH as string,
+            LTC: body.LTC as string
+        };
         const newUser = await subscriptionController.subscribeUser(subscribeRequest);
         const html = subscriptionController.renderSubscribePage(`Sweet! We just sent a verification email to ${newUser.email}. Click the link in the email to finish signing up.`)
         return HTTPResponse.html(html);

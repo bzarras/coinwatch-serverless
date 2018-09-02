@@ -4,9 +4,11 @@ import { HTTPError } from "./errors/HTTPError";
 
 export async function handleRequest(handler: () => Promise<ProxyResult>, customErrorHandler?: (err: HTTPError) => Promise<ProxyResult>): Promise<ProxyResult> {
     try {
-        return handler();
+        const result = await handler();
+        return result;
     } catch (err) {
-        if (customErrorHandler) return customErrorHandler(err);
+        console.log(err);
+        if (customErrorHandler) return await customErrorHandler(err);
         const code = err.code || 500;
         const message = err.message || 'Oops, there was a problem.';
         return HTTPResponse.error(code, message);
