@@ -11,7 +11,7 @@ import { MailService } from "../services/MailService";
 export class SubscriptionController {
     private readonly renderUnsubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/unsubscribed.pug'));
     private readonly renderSubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/subscription.pug'));
-    private readonly renderVerificationEmail = pug.compileFile(path.resolve(process.cwd(), 'static/views/emailTemplates/verification.pug'));
+    private readonly renderVerificationEmail = pug.compileFile(path.resolve(process.cwd(), 'static/emailTemplates/verification.pug'));
 
     async subscribeUser(subscription: SubscribeRequest): Promise<CoinwatchUser> {
         if (!validator.isEmail(subscription.email)) throw new BadRequestError('Email address is invalid');

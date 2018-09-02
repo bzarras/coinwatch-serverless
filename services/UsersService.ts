@@ -13,7 +13,8 @@ export class UsersService {
             users = scanOutput.Items.map(item => ({
                 email: item.email as string,
                 phrase: item.phrase as string,
-                currencies: item.currencies as any
+                currencies: item.currencies as any,
+                verified: item.verified as boolean
             }));
         }
         return users;
