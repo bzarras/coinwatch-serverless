@@ -14,6 +14,7 @@ export class SubscriptionController {
     private readonly renderVerificationEmail = pug.compileFile(path.resolve(process.cwd(), 'static/emailTemplates/verification.pug'));
 
     async subscribeUser(subscription: SubscribeRequest): Promise<CoinwatchUser> {
+        console.log(subscription);
         if (!validator.isEmail(subscription.email)) throw new BadRequestError('Email address is invalid');
         const { BTC, LTC, ETH } = subscription;
         const usersService = new UsersService();
@@ -29,23 +30,26 @@ export class SubscriptionController {
             verified: false
         };
         await usersService.putUser(user);
-        const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?phrase=${user.phrase}`});
+        const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?email=${user.email}&phrase=${user.phrase}`});
         await mailService.sendEmail({ email: user.email }, 'Please verify your email', emailHtml);
         return user;
     }
 
     async unsubscribeUser(email: string, phrase: string): Promise<void> {
-        if (!validator.isEmail(email)) throw new BadRequestError('Email address is invalid');
-        if (!validator.isAlphanumeric(phrase)) throw new BadRequestError('Phrase is malformed');
-
         const usersService = new UsersService();
-        const user = await usersService.getUser(email);
-
-        if (!user) throw new NotFoundError('User not found');
-        if (user.phrase !== phrase) throw new BadRequestError('Mismatched phrases');
+        await this.fetchAndValidateUser(email, phrase);
 
         await usersService.deleteUser(email);
         console.log(`${email} has successfully unsubscribed`);
+    }
+
+    async verifyEmail(email: string, phrase: string): Promise<void> {
+        const usersService = new UsersService();
+        const user = await this.fetchAndValidateUser(email, phrase);
+
+        user.verified = true;
+        await usersService.putUser(user);
+        console.log(`${email} has been successfully verified`);
     }
 
     renderUnsubscribedPage(message: string): string {
@@ -54,5 +58,18 @@ export class SubscriptionController {
 
     renderSubscribePage(message: string): string {
         return this.renderSubscribed({ message });
+    }
+
+    private async fetchAndValidateUser(email: string, phrase: string): Promise<CoinwatchUser> {
+        if (!validator.isEmail(email)) throw new BadRequestError('Email address is invalid');
+        if (!validator.isAlphanumeric(phrase)) throw new BadRequestError('Phrase is malformed');
+
+        const usersService = new UsersService();
+        const user = await usersService.getUser(email);
+
+        if (!user) throw new NotFoundError('User not found');
+        if (user.phrase !== phrase) throw new BadRequestError('Mismatched phrases');
+        
+        return user;
     }
 }

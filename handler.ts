@@ -52,6 +52,19 @@ export const unsubscribe: Handler = async (event: APIGatewayEvent, context: Cont
     }
 };
 
+export const verifyEmail: Handler = async (event: APIGatewayEvent, context: Context) => {
+    return handleRequest(async () => {
+        if (!event.queryStringParameters) throw new BadRequestError('Missing query parameters');
+        if (!event.queryStringParameters.phrase || !event.queryStringParameters.email) throw new BadRequestError('Missing proper querystring parameters');
+        const email = event.queryStringParameters.email;
+        const phrase = event.queryStringParameters.phrase;
+        const subscriptionController = new SubscriptionController();
+        await subscriptionController.verifyEmail(email, phrase);
+        const html = subscriptionController.renderSubscribePage(`Sweet! ${email} has been verified. You will receive price alert emails at this address.`);
+        return HTTPResponse.html(html);
+    });
+};
+
 export const dailyAlert: Handler = async (event: ScheduledEvent, context: Context) => {
     const cronController = new CronController();
     await cronController.runDailyJob();

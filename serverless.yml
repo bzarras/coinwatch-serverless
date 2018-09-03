@@ -57,6 +57,14 @@ functions:
           path: /subscribe
     environment:
       USER_TABLE_NAME: coinbase_notifier_recipient
+  verify:
+    handler: handler.verifyEmail
+    events:
+      - http:
+          method: get
+          path: /verify
+    environment:
+      USER_TABLE_NAME: coinbase_notifier_recipient
   dailyAlert:
     handler: handler.dailyAlert
     events:
