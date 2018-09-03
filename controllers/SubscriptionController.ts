@@ -30,7 +30,7 @@ export class SubscriptionController {
             verified: false
         };
         await usersService.putUser(user);
-        const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?email=${user.email}&phrase=${user.phrase}`});
+        const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?email=${encodeURIComponent(user.email)}&phrase=${user.phrase}`});
         await mailService.sendEmail({ email: user.email }, 'Please verify your email', emailHtml);
         return user;
     }

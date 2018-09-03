@@ -1,2 +1,2 @@
 p(style="font-size: 10px;")
-    a(href!=`https://www.coinwatch.fyi/unsubscribe?email=${recipient.email}&phrase=${recipient.phrase}`) unsubscribe
+    a(href!=`https://www.coinwatch.fyi/unsubscribe?email=${encodeURIComponent(recipient.email)}&phrase=${recipient.phrase}`) unsubscribe
