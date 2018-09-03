@@ -15,7 +15,7 @@ export class UsersService {
                 phrase: item.phrase as string,
                 currencies: item.currencies as any,
                 verified: item.verified as boolean
-            }));
+            })).filter(user => user.verified); // make sure to filter out unverified users
         }
         return users;
     }
