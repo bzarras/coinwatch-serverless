@@ -33,12 +33,3 @@ To deploy to aws:
 ```sh
 $ sls deploy
 ```
-
-## Progress
-I have the thing deployed successfully behind the domain coinwatch.fyi now. I
-used the `serverless-domain-manager` plugin to handle the custom domain bullshit.
-Looks like they just manually shoved an ALIAS A record into Route53 that points
-at a CloudFront distribution `d34ac0zp3cnpe6.cloudfront.net`. When I was trying
-to set that up manually, I was getting frustrated because Route53 wouldn't auto-
-populate the ALIAS options with anything from CloudFront, but looks like
-manually typing in the CloudFront distribution domain name works.
