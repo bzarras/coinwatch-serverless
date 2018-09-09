@@ -12,6 +12,7 @@ export class RootController {
         } else {
             console.log('Uh oh! No JWT_SECRET found. Rendering homepage without JWT');
         }
+        console.log(`Attaching JWT with value ${data.jwt}`);
         return renderIndex(data);
     }
     
