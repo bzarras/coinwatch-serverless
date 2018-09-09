@@ -1,26 +1,31 @@
 import { APIGatewayEvent, Context, ProxyResult, Handler, ScheduledEvent } from 'aws-lambda';
 import * as querystring from 'querystring';
-import { RootController } from './controllers/RootController';
-import { HTTPResponse } from './lib/HTTPResponse';
-import { SubscribeRequest } from './lib/SubscribeRequest';
-import { CronController } from './controllers/CronController';
-import { SubscriptionController } from './controllers/SubscriptionController';
-import { handleRequest } from './lib/handleRequest';
-import { BadRequestError } from './lib/errors/BadRequestError';
+import { RootController } from './src/controllers/RootController';
+import { HTTPResponse } from './src/lib/HTTPResponse';
+import { SubscribeRequest } from './src/lib/SubscribeRequest';
+import { CronController } from './src/controllers/CronController';
+import { SubscriptionController } from './src/controllers/SubscriptionController';
+import { handleRequest } from './src/lib/handleRequest';
+import { BadRequestError } from './src/lib/errors/BadRequestError';
+import { SESMailService } from './src/services/SESMailService';
+import { InvalidEmailError } from './src/lib/errors/InvalidEmailError';
 
 export const home: Handler = async (event: APIGatewayEvent, context: Context) => {
+    logRequestSource(event);
     const rootController = new RootController();
     const indexHtml: string = rootController.renderHomePage();
     return HTTPResponse.html(indexHtml);
 };
 
 export const subscribe: Handler = async (event: APIGatewayEvent, context: Context) => {
-    const subscriptionController = new SubscriptionController();
+    logRequestSource(event);
+    const subscriptionController = new SubscriptionController(new SESMailService());
     return handleRequest(async () => {
         if (!event.body) throw new BadRequestError('Missing request body');
         const body = querystring.parse(event.body); // Body comes over the wire as URL-Encoded format, not JSON, since it's from an HTML form
         const subscribeRequest: SubscribeRequest = { // Should really validate all the body params first
             email: body.email as string,
+            jwt: body.jwt as string,
             BTC: body.BTC as string,
             ETH: body.ETH as string,
             LTC: body.LTC as string
@@ -29,18 +34,28 @@ export const subscribe: Handler = async (event: APIGatewayEvent, context: Contex
         const html = subscriptionController.renderSubscribePage(`Sweet! We just sent a verification email to ${newUser.email}. Click the link in the email to finish signing up.`)
         return HTTPResponse.html(html);
     }, async (err) => {
-        const code = err.code || 500;
-        const html = subscriptionController.renderSubscribePage(`Whoops, there was a problem. Please try again.`)
+        const code = Number(err.code) || 500;
+        let html;
+        if (err instanceof InvalidEmailError) {
+            html = (new RootController()).renderHomePage({
+                formError: {
+                    message: `Sorry, that didn't look like a valid email address. Please try again.`
+                }
+            });
+        } else {
+            html = subscriptionController.renderSubscribePage(`Whoops, there was a problem. Please try again.`)
+        }
         return HTTPResponse.errorHtml(code, html);
     });
 };
 
 export const unsubscribe: Handler = async (event: APIGatewayEvent, context: Context) => {
+    logRequestSource(event);
     if (!event.queryStringParameters) return HTTPResponse.error(400, 'Bad Request. Missing query parameters.');
     const { email, phrase } = event.queryStringParameters;
     if (!email) return HTTPResponse.error(400, 'Bad Request. Missing client email');
     if (!phrase) return HTTPResponse.error(400, 'Bad Request. Missing client phrase');
-    const subscriptionController = new SubscriptionController();
+    const subscriptionController = new SubscriptionController(new SESMailService());
     try {
         await subscriptionController.unsubscribeUser(email, phrase);
         const html = subscriptionController.renderUnsubscribedPage(`${email} has been unsubscribed from coinwatch emails.`)
@@ -53,12 +68,13 @@ export const unsubscribe: Handler = async (event: APIGatewayEvent, context: Cont
 };
 
 export const verifyEmail: Handler = async (event: APIGatewayEvent, context: Context) => {
+    logRequestSource(event);
     return handleRequest(async () => {
         if (!event.queryStringParameters) throw new BadRequestError('Missing query parameters');
         if (!event.queryStringParameters.phrase || !event.queryStringParameters.email) throw new BadRequestError('Missing proper querystring parameters');
         const email = event.queryStringParameters.email;
         const phrase = event.queryStringParameters.phrase;
-        const subscriptionController = new SubscriptionController();
+        const subscriptionController = new SubscriptionController(new SESMailService());
         await subscriptionController.verifyEmail(email, phrase);
         const html = subscriptionController.renderSubscribePage(`Sweet! ${email} has been verified. You will receive price alert emails at this address.`);
         return HTTPResponse.html(html);
@@ -81,3 +97,7 @@ export const fiveMinuteAlert: Handler = async (event: ScheduledEvent, context: C
 export const catchAll: Handler = async (event: APIGatewayEvent, context: Context) => {
     return HTTPResponse.redirect(`${process.env.BASE_URL}/`);
 };
+
+function logRequestSource(event: APIGatewayEvent) {
+    console.log(`Request from ${event.requestContext.identity.sourceIp} with user-agent: ${event.requestContext.identity.userAgent}`);
+}

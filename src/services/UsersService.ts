@@ -1,5 +1,5 @@
 import { DynamoDB, AWSError } from 'aws-sdk';
-import { ScanOutput, ScanInput, GetItemOutput, GetItemInput, DeleteItemInput, DeleteItemOutput, AttributeValue, PutItemInput, PutItemOutput, PutItemInputAttributeMap } from 'aws-sdk/clients/dynamodb';
+import { ScanOutput, ScanInput, GetItemOutput, GetItemInput, DeleteItemInput, DeleteItemOutput, AttributeValue, PutItemInput, PutItemOutput, PutItemInputAttributeMap, BatchGetItemInput } from 'aws-sdk/clients/dynamodb';
 
 export class UsersService {
     private readonly userTableName = process.env.USER_TABLE_NAME;

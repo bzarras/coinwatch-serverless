@@ -41,6 +41,8 @@ functions:
       - http:
           method: get
           path: /
+    environment:
+      JWT_SECRET: ${env:JWT_SECRET}
   unsubscribe:
     handler: handler.unsubscribe
     events:
@@ -57,6 +59,7 @@ functions:
           path: /subscribe
     environment:
       USER_TABLE_NAME: coinbase_notifier_recipient
+      JWT_SECRET: ${env:JWT_SECRET}
   verify:
     handler: handler.verifyEmail
     events:

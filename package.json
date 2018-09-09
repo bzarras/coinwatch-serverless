@@ -4,10 +4,12 @@
   "description": "Serverless webpack example using Typescript",
   "main": "handler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "bash deploy.sh"
   },
   "dependencies": {
     "aws-sdk": "^2.270.1",
+    "jsonwebtoken": "^8.3.0",
     "pug": "^2.0.3",
     "randomstring": "^1.1.5",
     "request": "^2.87.0",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.7",
+    "@types/jsonwebtoken": "^7.2.8",
     "@types/node": "^10.3.5",
     "@types/pug": "^2.0.4",
     "@types/randomstring": "^1.1.6",

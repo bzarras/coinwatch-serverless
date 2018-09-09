@@ -7,6 +7,8 @@ block jumbotron-contents
             if formError
                 .alert.alert-danger #{formError.message}
             form(action="/subscribe" method="post")
+                if jwt
+                    input(type="hidden" name="jwt" value=`${jwt}`)
                 .form-group
                     input.form-control.form-control-lg.helvetica.font-weight-light(type="text" name="email" placeholder="youremail@xyz.com")
                 .form-check.helvetica.font-weight-light

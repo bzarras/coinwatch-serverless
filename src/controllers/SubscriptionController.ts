@@ -4,21 +4,37 @@ import { NotFoundError } from "../lib/errors/NotFoundError";
 import { BadRequestError } from "../lib/errors/BadRequestError";
 import * as validator from 'validator';
 import * as randomstring from 'randomstring';
+import * as jsonwebtoken from 'jsonwebtoken';
 import * as pug from 'pug';
 import * as path from 'path';
 import { MailService } from "../services/MailService";
+import { InternalServerError } from "../lib/errors/InternalServerError";
+import { InvalidEmailError } from "../lib/errors/InvalidEmailError";
 
 export class SubscriptionController {
     private readonly renderUnsubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/unsubscribed.pug'));
     private readonly renderSubscribed = pug.compileFile(path.resolve(process.cwd(), 'static/views/subscription.pug'));
     private readonly renderVerificationEmail = pug.compileFile(path.resolve(process.cwd(), 'static/emailTemplates/verification.pug'));
+    private readonly mailService: MailService;
+
+    constructor(mailService: MailService) {
+        this.mailService = mailService;
+    }
 
     async subscribeUser(subscription: SubscribeRequest): Promise<CoinwatchUser> {
         console.log(subscription);
-        if (!validator.isEmail(subscription.email)) throw new BadRequestError('Email address is invalid');
+        if (!process.env.JWT_SECRET) {
+            console.log('Uh oh! There is no JWT_SECRET in the environment');
+            throw new InternalServerError('Sorry, the server is not configured to perform this action');
+        }
+        try {
+            jsonwebtoken.verify(subscription.jwt, process.env.JWT_SECRET);
+        } catch (err) {
+            throw new BadRequestError('jwt is invalid or expired');
+        }
+        if (!validator.isEmail(subscription.email)) throw new InvalidEmailError();
         const { BTC, LTC, ETH } = subscription;
         const usersService = new UsersService();
-        const mailService = new MailService();
         const user: CoinwatchUser = {
             email: subscription.email,
             currencies: {
@@ -31,7 +47,7 @@ export class SubscriptionController {
         };
         await usersService.putUser(user);
         const emailHtml = this.renderVerificationEmail({ link: `https://coinwatch.fyi/verify?email=${encodeURIComponent(user.email)}&phrase=${user.phrase}`});
-        await mailService.sendEmail({ email: user.email }, 'Please verify your email', emailHtml);
+        await this.mailService.sendEmail({ email: user.email }, 'Please verify your email', emailHtml);
         return user;
     }
 

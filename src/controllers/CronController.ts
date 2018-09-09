@@ -1,6 +1,7 @@
 import { CoinDataSource, CoinSymbol, Coin } from "../services/CoinDataSource";
 import { CoinMarketCapDataSource } from "../services/CoinMarketCapDataSource";
-import { MailService, MailRecipient } from "../services/MailService";
+import { SESMailService } from "../services/SESMailService";
+import { MailRecipient } from '../services/MailService';
 import { UsersService } from "../services/UsersService";
 
 export class CronController {
@@ -10,7 +11,7 @@ export class CronController {
         const [coins, recipients] = await this.fetchCoinsAndRecipients();
         const filteredCoins = coins.filter(coin => this._validCoins.has(coin.symbol));
         
-        const mailService = new MailService();
+        const mailService = new SESMailService();
         const mailPromises = recipients.map(recipient => mailService.sendDailyAlertEmail({ toRecipient: recipient, aboutCoins: filteredCoins }));
         for (const sentMail of mailPromises) {
             await sentMail;

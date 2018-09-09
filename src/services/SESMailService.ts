@@ -3,8 +3,9 @@ import * as pug from 'pug';
 import * as path from 'path';
 import { SES, AWSError } from 'aws-sdk';
 import { SendEmailRequest, SendEmailResponse } from 'aws-sdk/clients/ses';
+import { MailService, MailRecipient } from './MailService';
 
-export class MailService {
+export class SESMailService implements MailService {
     private readonly ses = new SES();
     private readonly renderDailyEmail = pug.compileFile(path.resolve(process.cwd(), 'static/emailTemplates/dailyUpdate.pug'));
 
@@ -46,11 +47,6 @@ export class MailService {
             });
         });  
     }
-}
-
-export interface MailRecipient {
-    email: string;
-    phrase?: string;
 }
 
 function formatPrice(priceString: string): string {
