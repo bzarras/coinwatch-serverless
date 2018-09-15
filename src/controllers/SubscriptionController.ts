@@ -5,6 +5,7 @@ import { BadRequestError } from "../lib/errors/BadRequestError";
 import * as validator from 'validator';
 import * as randomstring from 'randomstring';
 import * as jsonwebtoken from 'jsonwebtoken';
+import * as rp from 'request-promise';
 import * as pug from 'pug';
 import * as path from 'path';
 import { MailService } from "../services/MailService";
@@ -23,6 +24,8 @@ export class SubscriptionController {
 
     async subscribeUser(subscription: SubscribeRequest): Promise<CoinwatchUser> {
         console.log(subscription);
+
+        // validate JWT
         if (!process.env.JWT_SECRET) {
             console.log('Uh oh! There is no JWT_SECRET in the environment');
             throw new InternalServerError('Sorry, the server is not configured to perform this action');
@@ -32,7 +35,16 @@ export class SubscriptionController {
         } catch (err) {
             throw new BadRequestError('jwt is invalid or expired');
         }
+
+        // validate email address
         if (!validator.isEmail(subscription.email)) throw new InvalidEmailError();
+
+        // validate captcha
+        if (!subscription.captchaResponse) throw new BadRequestError('User bypassed captcha. Probably a bot.');
+        const isCaptchaValid = await this.validateCaptcha(subscription.captchaResponse);
+        if (!isCaptchaValid) throw new BadRequestError('Captcha validation failed. You are probably a bot.');
+
+        // now that request has been validated, process the subscription
         const { BTC, LTC, ETH } = subscription;
         const usersService = new UsersService();
         const user: CoinwatchUser = {
@@ -87,5 +99,23 @@ export class SubscriptionController {
         if (user.phrase !== phrase) throw new BadRequestError('Mismatched phrases');
         
         return user;
+    }
+
+    private async validateCaptcha(captchaResponse: string): Promise<boolean> {
+        try {
+            const googleResponse = await rp({
+                method: 'POST',
+                uri: 'https://www.google.com/recaptcha/api/siteverify',
+                formData: { // need to use 'formData', as opposed to 'body', because that is how google expects it
+                    secret: process.env.CAPTCHA_SECRET_KEY,
+                    response: captchaResponse
+                },
+                json: true // reponse body will be json, according to google
+            });
+            return googleResponse.success
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
     }
 }

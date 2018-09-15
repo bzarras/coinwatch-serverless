@@ -6,7 +6,7 @@ block jumbotron-contents
         .card-body
             if formError
                 .alert.alert-danger #{formError.message}
-            form(action="/subscribe" method="post")
+            form#registration-form(action="/subscribe" method="post")
                 if jwt
                     input(type="hidden" name="jwt" value=`${jwt}`)
                 .form-group
@@ -23,5 +23,5 @@ block jumbotron-contents
                     label.form-check-label
                     input.form-check-input(type="checkbox" name="LTC" checked)
                     |Litecoin
-                button.btn.btn-primary.btn-lg.helvetica.font-weight-light(type="submit") Get Alerts
+                button.btn.btn-primary.btn-lg.helvetica.font-weight-light.g-recaptcha(data-sitekey="6LfwbXAUAAAAAPoMGc_KyXbWw3G-SlrZEhLnPXAo" data-callback="onCaptchaSubmit") Get Alerts
                 small.form-text.text-muted By clicking "Get Alerts", you are agreeing to receive emails about the selected currencies. You can unsubscribe from these emails at any time.

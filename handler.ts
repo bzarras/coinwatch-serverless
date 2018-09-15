@@ -26,6 +26,7 @@ export const subscribe: Handler = async (event: APIGatewayEvent, context: Contex
         const subscribeRequest: SubscribeRequest = { // Should really validate all the body params first
             email: body.email as string,
             jwt: body.jwt as string,
+            captchaResponse: body['g-recaptcha-response'] as string,
             BTC: body.BTC as string,
             ETH: body.ETH as string,
             LTC: body.LTC as string

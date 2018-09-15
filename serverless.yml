@@ -60,6 +60,7 @@ functions:
     environment:
       USER_TABLE_NAME: coinbase_notifier_recipient
       JWT_SECRET: ${env:JWT_SECRET}
+      CAPTCHA_SECRET_KEY: ${env:CAPTCHA_SECRET_KEY}
   verify:
     handler: handler.verifyEmail
     events:
